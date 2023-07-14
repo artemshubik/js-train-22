@@ -18,6 +18,24 @@ class OrderTracker {
   /**
    * Статичний метод get використовується для отримання списку замовлень
    */
+
+  static instance = null;
+  static orders = [];
+
+  static create() {
+    if (!OrderTracker.instance) {
+      OrderTracker.instance = new OrderTracker();
+    }
+    return OrderTracker.instance;
+  }
+
+  static add(item) {
+    OrderTracker.orders.push(item);
+  }
+
+  static get() {
+    return OrderTracker.orders;
+  }
 }
 console.log("Завдання 1 ====================================");
 // Після виконання розкоментуйте код нижче
@@ -34,3 +52,10 @@ console.log("Завдання 1 ====================================");
 
 // Виводимо список замовлень в консоль
 // console.log(orders);
+
+OrderTracker.add("Телефон");
+OrderTracker.add("Ноутбук");
+
+const orders = OrderTracker.get();
+
+console.log(orders);

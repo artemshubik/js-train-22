@@ -11,6 +11,28 @@ class Writer {
   // Він викликає статичний метод класу Version, create, передаючи йому поточний текст як аргумент.
   // Метод restore відновлює попередній стан тексту, викликаючи статичний метод класу Version, restore.
   // Цей метод повертає останню збережену версію тексту, яку ми встановлюємо як поточний текст.
+
+  #content = "";
+
+  set content(newContent) {
+    this.#content = newContent;
+    this.#store();
+  }
+
+  get content() {
+    return this.#content;
+  }
+
+  #store() {
+    Version.create(this.#content);
+  }
+
+  restore() {
+    const previousVersion = Version.restore();
+    if (previousVersion) {
+      this.#content = previousVersion.content;
+    }
+  }
 }
 
 // Клас Version відповідає за створення та зберігання версій тексту.
@@ -22,6 +44,21 @@ class Version {
   // Створений екземпляр додається до масиву версій versions.
   // Статичний метод restore видаляє останный элемент масиву,
   // та повертає останню збережену версію тексту з масиву версій this.#versions[this.#versions.length - 1] .
+
+  static #versions = [];
+
+  constructor(content) {
+    this.content = content;
+  }
+
+  static create(content) {
+    const version = new Version(content);
+    this.#versions.push(version);
+  }
+
+  static restore() {
+    return this.#versions.pop();
+  }
 }
 console.log("Завдання 5 ====================================");
 // Після виконання розкоментуйте код нижче
@@ -44,3 +81,17 @@ console.log("Завдання 5 ====================================");
 // Ще раз відновлюємо попередній текст
 // writer.restore();
 // console.log(writer.content);
+
+const writer = new Writer();
+
+writer.content = "Це початковий текст.";
+writer.content = "Редагований текст.";
+writer.content = "Оновлений текст.";
+
+console.log(writer.content);
+
+writer.restore();
+console.log(writer.content);
+
+writer.restore();
+console.log(writer.content);

@@ -9,6 +9,18 @@ class AuthProcessor {
   // Перевіряє, чи є наступний обробник в ланцюгу.
   // Якщо так, передає запит на перевірку аутентифікації наступному обробнику,this.nextProcessor.validate(username, passkey), та повертаємо результат.
   // Якщо наступного обробника немає, повертає false, сигналізуючи про невдалу аутентифікацію.
+
+  setNextProcessor(processor) {
+    this.nextProcessor = processor;
+    return processor;
+  }
+
+  validate(username, passkey) {
+    if (this.nextProcessor) {
+      return this.nextProcessor.validate(username, passkey);
+    }
+    return false;
+  }
 }
 
 // TwoStepProcessor Клас обробника, який перевіряє двофакторний код. Наслідує базовий клас AuthProcessor.
@@ -18,6 +30,22 @@ class TwoStepProcessor extends AuthProcessor {
   // Виводить повідомлення про успішну аутентифікацію: Вхід дозволено з двофакторною аутентифікацією, і повертає true.
   // Якщо дані не вірні, запит на аутентифікацію передається наступному обробнику в ланцюгу, super.validate(username, passkey).
   // isValidTwoStepCode Метод для перевірки двофакторного коду,який повертає true.
+
+  validate(username, passkey) {
+    if (
+      username === "john" &&
+      passkey === "password" &&
+      this.isValidTwoStepCode()
+    ) {
+      console.log("Вхід дозволено з двофакторною аутентифікацією");
+      return true;
+    }
+    return super.validate(username, passkey);
+  }
+
+  isValidTwoStepCode() {
+    return true;
+  }
 }
 
 // RoleProcessor Клас обробника, який перевіряє ролі користувача. Наслідує базовий клас AuthProcessor.
@@ -26,6 +54,14 @@ class RoleProcessor extends AuthProcessor {
   // Якщо роль користувача - гість (guest), аутентифікація успішна.
   // Виводить повідомлення про успішну аутентифікацію Вхід дозволено з роллю гостя, і повертає true.
   // Якщо роль не відповідає, запит на аутентифікацію передається наступному обробнику в ланцюгу.
+
+  validate(username, passkey) {
+    if (username === "guest") {
+      console.log("Вхід дозволено з роллю гостя");
+      return true;
+    }
+    return super.validate(username, passkey);
+  }
 }
 
 // CredentialsProcessor Клас обробника, який перевіряє облікові дані користувача. Наслідує базовий клас AuthProcessor.
@@ -34,6 +70,14 @@ class CredentialsProcessor extends AuthProcessor {
   // Якщо облікові дані вірні, username=admin, та passkey=admin123, аутентифікація успішна.
   // Виводить повідомлення про успішну аутентифікацію Вхід дозволено за обліковими даними, і повертає true.
   // Якщо облікові дані не вірні, запит на аутентифікацію передається наступному обробнику в ланцюгу.
+
+  validate(username, passkey) {
+    if (username === "admin" && passkey === "admin123") {
+      console.log("Вхід дозволено за обліковими даними");
+      return true;
+    }
+    return super.validate(username, passkey);
+  }
 }
 
 // Клас Builder для створення об'єкта ланцюга обробників.
@@ -47,6 +91,26 @@ class ProcessorBuilder {
   // Повертає this.
   // Метод create для створення ланцюга обробників.
   // Повертає перший обробник у ланцюгу.
+
+  constructor() {
+    this.firstProcessor = null;
+    this.lastProcessor = null;
+  }
+
+  add(processor) {
+    if (!this.firstProcessor) {
+      this.firstProcessor = processor;
+      this.lastProcessor = processor;
+    } else {
+      this.lastProcessor.setNextProcessor(processor);
+      this.lastProcessor = processor;
+    }
+    return this;
+  }
+
+  create() {
+    return this.firstProcessor;
+  }
 }
 console.log("Завдання 6 ====================================");
 // Після виконання розкоментуйте код нижче
@@ -66,3 +130,16 @@ console.log("Завдання 6 ====================================");
 // processor.validate("john", "password"); // Вхід дозволено з двоступінчастою аутентифікацією
 // processor.validate("guest", "guest123"); // Вхід дозволено з роллю гостя
 // processor.validate("user", "password"); // Вхід заборонено
+
+const processorBuilder = new ProcessorBuilder();
+
+const processor = processorBuilder
+  .add(new CredentialsProcessor())
+  .add(new TwoStepProcessor())
+  .add(new RoleProcessor())
+  .create();
+
+processor.validate("admin", "admin123"); // Вхід дозволено за обліковими даними
+processor.validate("john", "password"); // Вхід дозволено з двофакторною аутентифікацією
+processor.validate("guest", "guest123"); // Вхід дозволено з роллю гостя
+processor.validate("user", "password"); // Вхід заборонено

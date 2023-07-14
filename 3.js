@@ -11,6 +11,14 @@ class Customer {
   /**
    * Метод відправки повідомлення клієнту по електронній пошті.Приймає message - повідомлення,та виводить в консоль ${this.email} ${message}.
    */
+
+  constructor(email) {
+    this.email = email;
+  }
+
+  sendEmail(message) {
+    console.log(`${this.email} ${message}`);
+  }
 }
 
 /**
@@ -20,6 +28,10 @@ class Product {
   /**
    * Конструктор для класу Product.Приймає name - Назва продукту.
    */
+
+  constructor(name) {
+    this.name = name;
+  }
 }
 
 /**
@@ -48,6 +60,31 @@ class Store {
    */
   // За допомогою forEach перебираємо масив customers
   // Для кожного елементу масиву викликаємо метод sendEmail з рядком `Новий продукт "${product.name}" в магазині ${this.name}!`
+
+  constructor(name) {
+    this.name = name;
+    this.customers = [];
+  }
+
+  subscribe(customer) {
+    this.customers.push(customer);
+  }
+
+  unsubscribe(customer) {
+    this.customers = this.customers.filter((c) => c !== customer);
+  }
+
+  createProduct(name) {
+    const product = new Product(name);
+    this.sendNotify(product);
+  }
+
+  sendNotify(product) {
+    const message = `Новий продукт "${product.name}" в магазині ${this.name}!`;
+    this.customers.forEach((customer) => {
+      customer.sendEmail(message);
+    });
+  }
 }
 
 console.log("Завдання 3 ====================================");
@@ -68,3 +105,19 @@ console.log("Завдання 3 ====================================");
 // store.unsubscribe(customer1);
 
 // store.createProduct("Бездротові навушники");
+
+const store = new Store("IT Supermarket");
+
+const customer1 = new Customer("john@example.com");
+const customer2 = new Customer("jane@example.com");
+const customer3 = new Customer("alice@example.com");
+
+store.subscribe(customer1);
+store.subscribe(customer2);
+store.subscribe(customer3);
+
+store.createProduct("Новий ноутбук");
+
+store.unsubscribe(customer1);
+
+store.createProduct("Бездротові навушники");
